@@ -1,0 +1,20 @@
+[
+    {
+        "name": "money",
+        "description": "The amount of money the person was paid to do the task in dollars",
+        "classes": [0, 100000],
+        "contextualizer": "paid _ dollars",
+        "formatOptions": {
+            "maximumFractionDigits": 0
+        }
+    },
+    {
+        "name": "tip",
+        "description": "The amount of money the person was paid to do the task in dollars",
+        "classes": ["stick", "mushroom"],
+        "contextualizer": "hit with _",
+        "formatOptions": {
+            "maximumFractionDigits": 0
+        }
+    }
+]

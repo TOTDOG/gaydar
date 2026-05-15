@@ -1,21 +1,22 @@
 <script setup lang="ts">
     import { onMounted, ref } from 'vue';
-    import { Paramater, loadParams } from '../utils/parameter';
-    import { generatePrompt } from '../utils/generation';
-    
-    const params = ref<Paramater[]>([]);
+    import { getPrompt } from '../services/promptService';
+
     const scenario = ref("Loading...");
+    const userInput = ref("")
 
     onMounted(async () => {
-        params.value = await loadParams("/parameters.json");
-        if (params.value.length > 0) {
-            scenario.value = generatePrompt(params.value);
-        } else {
-            scenario.value = "No parameters found.";
-        }
+        updateScenario()
     });
+    
+    async function updateScenario() {
+        scenario.value = await getPrompt()
+    }
 </script>
 
 <template>
     <p>{{ scenario }}</p>
+    <input v-model="userInput"/>
+    <button @click="updateScenario">Generate Scenario</button>
+    <button>Submit</button>
 </template>
