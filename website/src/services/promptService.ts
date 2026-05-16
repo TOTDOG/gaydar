@@ -12,6 +12,6 @@ export async function getPrompt() {
         return result.data
     } catch (error) {
         console.error(error)
-        return "Error generating prompt"
+        return error
     }
 }

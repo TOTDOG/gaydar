@@ -3,7 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 
 export function generateScenario(params: Parameter[], paramNumber: number) {
-    let fullSentence: string = "The person was ";
+    let fullSentence: string = "the person was ";
     let allIndices: number[] = [];
     for (let i = 0; i < params.length; i++) {
         allIndices.push(i);
