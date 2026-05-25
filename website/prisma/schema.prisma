@@ -1,0 +1,34 @@
+datasource db {
+  provider = "cockroachdb"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Comparison {
+  id      String      @id @default(uuid()) @db.Uuid
+  setParameters0 Json
+  setParameters1 Json
+  relate  Float
+}
+
+model Rank {
+  id     String      @id @default(uuid()) @db.Uuid
+  setParameters Json
+  rank   Float
+}
+
+model Parameter {
+  id    String @id @default(uuid()) @db.Uuid
+  name  String @unique
+  type  String
+  classes String[]
+  min Int?
+  max Int?
+  samplePoints Json
+  description String
+  contextualizer String
+  baselineVector Float[]
+  decimals Int?
+}
