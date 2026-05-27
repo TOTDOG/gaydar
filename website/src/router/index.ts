@@ -1,6 +1,6 @@
-import { createMemoryHistory, createRouter } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
-import Home from '../components/Home.vue'
+import Home from '../views/Home.vue'
 
 const routes = [
   {
@@ -12,12 +12,18 @@ const routes = [
     path: '/form',
     name: 'form',
     // Lazy load this component for optimized initial bundle sizes
-    component: () => import('../components/Form.vue')
+    component: () => import('../views/Form.vue')
+  },
+  {
+    path: '/propose-attribute',
+    name: 'propose-attribute',
+    // Lazy load this component for optimized initial bundle sizes
+    component: () => import('../views/ProposeAttribute.vue')
   },
 ]
 
 
 export const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes,
 })

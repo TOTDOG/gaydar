@@ -2,6 +2,13 @@ datasource db {
   provider = "cockroachdb"
 }
 
+model GlobalCounter {
+  metricName  String   @id
+  metricValue BigInt   @default(0)
+  updatedAt   DateTime @updatedAt
+
+}
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -22,6 +29,7 @@ model Rank {
 model Parameter {
   id    String @id @default(uuid()) @db.Uuid
   name  String @unique
+  dateCreated @default(now())
   type  String
   classes String[]
   min Int?

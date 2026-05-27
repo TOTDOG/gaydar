@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import { onMounted, ref } from 'vue';
-    import { getPrompt } from '../services/promptService';
+    import { getPrompt } from '../services/promptService.js';
     // import { submitData } from '../services/submitService';
     import Slider from 'primevue/slider'
     import { RankDataSchema, type Prompt, type PromptResponse } from '../shared/types/prompt.schema.js';
@@ -56,7 +56,7 @@ import { submitData } from '../services/submitService.js';
     <button @click="submitForm" :disabled="isSubmitting">Submit</button>
 </template>
 
-<style>
+<style scoped>
     .slider-container {
     display: flex;
     align-items: center;
