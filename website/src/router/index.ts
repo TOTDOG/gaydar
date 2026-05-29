@@ -15,6 +15,11 @@ const routes = [
     component: () => import('../views/Form.vue')
   },
   {
+    path: '/about',
+    name: 'about',
+    component: () => import('../views/About.vue')
+  },
+  {
     path: '/propose-attribute',
     name: 'propose-attribute',
     // Lazy load this component for optimized initial bundle sizes
@@ -26,4 +31,8 @@ const routes = [
 export const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    // always scroll to top
+    return { top: 0 }
+  },
 })

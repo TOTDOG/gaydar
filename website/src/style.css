@@ -4,7 +4,6 @@
 }
 
 :root {
-  --text-color: "wheat";
   --bg: rgb(235, 239, 254);
   --heading: "Rethink Sans";
   background: var(--bg);
@@ -20,4 +19,12 @@ h2 {
   font-family: var(--heading);
   font-weight: 500;
   color: var(--text-color);
+}
+html, body {
+    scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
 }
