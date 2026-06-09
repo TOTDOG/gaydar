@@ -4,7 +4,7 @@
 <template>
   <div class="content-wrapper">
     <div class="head-banner">
-      <img class="logo" src="../assets/PNG/Asset 6@8x.png" alt="Company Logo"/>
+      <img class="logo" src="../assets/PNG/Asset 7@8x.png" alt="Company Logo"/>
       <div class="overlay"></div>
       <div class="blurb">
         <p>An unbiased (not really) approach to detecting fruit.</p>
@@ -52,7 +52,7 @@
 .overlay {
   position: absolute;
   inset: 0;
-  height: max(calc(100vh - 48px), 100%);
+  height: 100%;
   background-color: rgba(210, 116, 36, 0.5);
 }
 
@@ -88,6 +88,6 @@
 }
 
 #easter-egg {
-  top: 90%;
+  top: 92%;
 }
 </style>

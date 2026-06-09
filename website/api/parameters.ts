@@ -1,4 +1,4 @@
-import { type Parameter } from "../src/shared/types/parameter.schema";
+import { type Parameter } from "../src/shared/types/parameter.schema.js";
 
 export const parameters: Parameter[] = [
     {
@@ -11,9 +11,9 @@ export const parameters: Parameter[] = [
         max: 100000,
         samplePoints: { breakpoints: [0, 1], values: [0, 100000] },
         contextualizer: "paid ${} dollars",
-        baselineVector: [0,0],
+        baselineVector: [0, 0],
         decimals: 0,
-        id: 1,
+        id: "1",
     },
     {
         name: "tip",
@@ -25,7 +25,7 @@ export const parameters: Parameter[] = [
             values: [0, 1, 2],
         },
         contextualizer: "hit with ${}",
-        baselineVector: [0,0],
-        id: 2,
+        baselineVector: [0, 0],
+        id: "2",
     },
 ];

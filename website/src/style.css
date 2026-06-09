@@ -2,10 +2,13 @@
   font-family: "Rethink Sans";
   src: url('./assets/Fonts/RethinkSans-VariableFont_wght.ttf');
 }
-
+* {
+  font-family: "Rethink Sans";
+}
 :root {
   --bg: rgb(235, 239, 254);
   --heading: "Rethink Sans";
+
   background: var(--bg);
 }
 body {

@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import dotenv from "dotenv";
-import { parameters } from "./parameters.js";
 import {
     RankDataSchema,
     type Prompt,
@@ -15,11 +14,14 @@ import {
     type Parameter,
     type SetParameter,
 } from "../src/shared/types/parameter.schema.js";
+import { prisma } from "../lib/prisma.js";
+// import { parameters } from "./parameters.js";
 import { sampleParam } from "../src/shared/functions/sampleFn.js";
+import type { SamplePoints } from "../src/shared/types/samplePoints.schema.js";
 dotenv.config({ path: ".env.local", quiet: true });
 
 export function generateScenario(params: Parameter[], paramNumber: number) {
-    let fullSentence: string = "the person was ";
+    let fullSentence: string = "the person ";
     let allIndices: number[] = [];
     for (let i = 0; i < params.length; i++) {
         allIndices.push(i);
@@ -30,7 +32,7 @@ export function generateScenario(params: Parameter[], paramNumber: number) {
         significantIndices.push(allIndices[index]);
         allIndices.splice(index, 1);
     }
-    let ids: number[] = [];
+    let ids: string[] = [];
     let values: (ContinuousValue | NominalValue)[] = [];
     for (let i = 0; i < significantIndices.length; i++) {
         const param: Parameter = params[significantIndices[i]];
@@ -63,6 +65,12 @@ export function generateScenario(params: Parameter[], paramNumber: number) {
     return scenario;
 }
 export function generatePrompt(params: Parameter[]) {
+    if (!params || params.length === 0) {
+        return {
+            data: { paramSet: [] },
+            prompt: "No active attributes! Go contribute and add some.",
+        };
+    }
     if (Math.random() < 0.3) {
         const promptScenario: Scenario = generateScenario(
             params,
@@ -96,6 +104,22 @@ export function generatePrompt(params: Parameter[]) {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         if (req.method === "GET") {
+            const paramRows = await prisma.parameter.findMany({
+                where: { active: true },
+            });
+            const parameters: Parameter[] = paramRows.map((row) => ({
+                name: row.name,
+                active: row.active,
+                id: row.id,
+                classes: row.classes,
+                samplePoints: row.samplePoints as SamplePoints,
+                baselineVector: row.baselineVector,
+                description: row.description,
+                contextualizer: row.contextualizer,
+                min: row.min ?? undefined,
+                max: row.max ?? undefined,
+                decimals: row.decimals ?? undefined,
+            }));
             const promptResult: Prompt = generatePrompt(parameters);
             const SUBMIT_SECRET_KEY = process.env.SUBMIT_SECRET_KEY;
             if (!SUBMIT_SECRET_KEY) {
@@ -108,7 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             let structuralString: string = "";
             if (RankDataSchema.allows(promptResult.data)) {
                 const sortedParams = [...promptResult.data.paramSet].sort(
-                    (a, b) => a.id - b.id,
+                    (a, b) => a.id.localeCompare(b.id),
                 );
                 structuralString = JSON.stringify([
                     ...sortedParams.map((x) => x.id),
@@ -116,10 +140,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ]);
             } else {
                 const sortedParams0 = [...promptResult.data.paramSet0].sort(
-                    (a, b) => a.id - b.id,
+                    (a, b) => a.id.localeCompare(b.id),
                 );
                 const sortedParams1 = [...promptResult.data.paramSet1].sort(
-                    (a, b) => a.id - b.id,
+                    (a, b) => a.id.localeCompare(b.id),
                 );
                 structuralString = JSON.stringify([
                     ...sortedParams0.map((x) => x.id),
@@ -129,6 +153,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     ...sortedParams1.map((x) => x.value),
                 ]);
             }
+            const expiresAt = Date.now() + 1000 * 60 * 5;
+            structuralString += `-${expiresAt}`;
             const structuralHash = crypto
                 .createHmac("sha256", SUBMIT_SECRET_KEY)
                 .update(structuralString)
@@ -137,6 +163,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const response: PromptResponse = {
                 prompt: promptResult,
                 structuralHash: structuralHash,
+                expiresAt: expiresAt,
             };
             return res.status(200).json({
                 success: true,

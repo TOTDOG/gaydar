@@ -31,6 +31,7 @@ model Parameter {
   name  String @unique
   dateCreated DateTime @default(now())
   type  String
+  active Boolean
   classes String[]
   min Int?
   max Int?
@@ -39,4 +40,5 @@ model Parameter {
   contextualizer String
   baselineVector Float[]
   decimals Int?
+  votes Int
 }

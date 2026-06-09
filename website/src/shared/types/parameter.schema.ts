@@ -10,12 +10,12 @@ const parameters = scope({
     },
     SetParameterSchema: {
         value: "ContinuousValueSchema | NominalValueSchema",
-        id: "number",
+        id: "string",
     },
     ParameterSchema: {
         active: "boolean",
         name: "string",
-        id: "number",
+        id: "string",
         classes: "string[]",
         "min?": "number",
         "max?": "number",
@@ -23,7 +23,7 @@ const parameters = scope({
         baselineVector: "number[]",
         description: "string",
         contextualizer: "string",
-        "decimals?": "number"
+        "decimals?": "number",
     },
 }).export();
 

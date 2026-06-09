@@ -30,7 +30,7 @@ import Navbar from './components/Navbar.vue';
   .container {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 100dvh;
     user-select: none;
     flex: 1;
   }
