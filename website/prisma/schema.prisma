@@ -1,5 +1,6 @@
 datasource db {
   provider = "cockroachdb"
+  url      = env("DATABASE_URL")
 }
 
 model GlobalCounter {
@@ -26,6 +27,14 @@ model Rank {
   rank   Float
 }
 
+model Vote {
+  id String @id @default(uuid()) @db.Uuid
+  ip String
+  vote Int
+  paramId String @db.Uuid
+  param Parameter @relation(fields: [paramId], references: [id])
+}
+
 model Parameter {
   id    String @id @default(uuid()) @db.Uuid
   name  String @unique
@@ -40,5 +49,5 @@ model Parameter {
   contextualizer String
   baselineVector Float[]
   decimals Int?
-  votes Int
+  votes Vote[]
 }

@@ -39,7 +39,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                             description: parameter.description,
                             contextualizer: parameter.contextualizer,
                             type: "nominal",
-                            votes: 0,
                         },
                     });
                     return res.status(200).json({
@@ -61,7 +60,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                             contextualizer: parameter.contextualizer,
                             decimals: parameter.decimals,
                             type: "continuous",
-                            votes: 0,
                         },
                     });
                     return res.status(200).json({

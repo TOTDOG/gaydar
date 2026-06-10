@@ -10,7 +10,8 @@ import {
 } from "../shared/types/prompt.schema.js";
 import { submitData } from "../services/submitService.js";
 
-const scenario = ref("Loading...");
+const loading = ref(true);
+const scenario = ref("");
 const userInput = ref(0.5);
 let hash: string;
 let prompt: Prompt;
@@ -22,6 +23,8 @@ onMounted(async () => {
 });
 
 async function updateScenario() {
+    loading.value = true;
+    scenario.value = "";
     let result: PromptResponse | undefined = await getPrompt();
     if (result !== undefined) {
         prompt = result.prompt;
@@ -35,6 +38,7 @@ async function updateScenario() {
         expiration = result.expiresAt;
         console.log(JSON.stringify(prompt.data));
     }
+    loading.value = false;
 }
 
 async function submitForm() {
@@ -46,28 +50,56 @@ async function submitForm() {
 </script>
 
 <template>
-    <p>{{ scenario }}</p>
-    <div v-if="isRankPrompt" class="slider-container">
-        <span>Not Gay</span>
-        <Slider v-model="userInput" :min="0" :max="1" :step="0.01" />
-        <span>Very Gay</span>
+    <div class="container">
+        <p>{{ scenario }}</p>
+        <div v-if="loading">
+            <p>Loading...</p>
+        </div>
+        <div v-else-if="isRankPrompt" class="slider-container">
+            <p>Not Gay</p>
+            <Slider v-model="userInput" :min="0" :max="1" :step="0.01" />
+            <p>Very Gay</p>
+        </div>
+        <div v-else class="slider-container">
+            <p>Scenario 1</p>
+            <Slider v-model="userInput" :min="0" :max="1" :step="0.01" />
+            <p>Scenario 2</p>
+        </div>
+        <span class="submit-container">
+            <button @click="submitForm" :disabled="isSubmitting">Submit</button>
+        </span>
     </div>
-    <div v-else class="slider-container">
-        <span>Scenario 1</span>
-        <Slider v-model="userInput" :min="0" :max="1" :step="0.01" />
-        <span>Scenario 2</span>
-    </div>
-    <button @click="submitForm" :disabled="isSubmitting">Submit</button>
 </template>
 
 <style scoped>
+.submit-container {
+    display: flex;
+    justify-content: center;
+}
 .slider-container {
     display: flex;
     align-items: center;
     gap: 12px;
+    padding: 0 10px 0 10px;
+    margin: 10px 0 10px 0;
 }
-
+.slider-container p {
+    font-size: clamp(8px, 3vw, 15px);
+    margin: 0;
+}
 .slider-container .p-slider {
     flex: 1; /* makes the slider fill remaining space */
+    background-color: wheat;
+    --p-slider-range-background: rgb(155, 65, 1);
+}
+.container {
+    height: 100%;
+    background-color: #deb191;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding-bottom: 20px;
 }
 </style>

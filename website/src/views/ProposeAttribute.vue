@@ -232,17 +232,6 @@ span {
 .name-input {
     justify-content: center;
 }
-.name-input textarea {
-    resize: none;
-    field-sizing: content;
-    max-width: 90%; /* Prevents the inputs from touching in the middle */
-    font-weight: 500;
-    font-size: clamp(10px, 3vw, 15px);
-    /* Centers the text inside the input field */
-    text-align: left;
-    border: 2px solid rgba(80, 34, 1, 0.395);
-    background: rgba(255, 255, 255, 0.75);
-}
 .class-container {
     display: flex;
     align-items: center;
@@ -251,19 +240,6 @@ span {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     margin: 10px;
-}
-input {
-    field-sizing: content;
-    max-width: 90%; /* Prevents the inputs from touching in the middle */
-    font-weight: 500;
-    font-size: clamp(12px, 5vw, 20px);
-
-    /* Centers each input horizontally within its respective grid half */
-    justify-self: center;
-    /* Centers the text inside the input field */
-    text-align: left;
-    border: 2px solid rgba(80, 34, 1, 0.395);
-    background: rgba(255, 255, 255, 0.75);
 }
 .nominal-container {
     list-style: none;
@@ -340,45 +316,5 @@ input {
     flex-direction: column;
     position: relative;
     padding-bottom: 20px;
-}
-p,
-h1,
-h2,
-button {
-    margin: 0;
-    /* color: rgb(86, 50, 12); */
-    color: wheat;
-    display: flex;
-    flex-direction: row;
-}
-h1,
-h2 {
-    justify-content: center;
-}
-h1 {
-    margin-top: 10px;
-    font-size: clamp(20px, 9vw, 32px);
-    font-weight: 700;
-}
-h2 {
-    margin-top: 10px;
-    font-size: clamp(15px, 8vw, 25px);
-}
-p {
-    margin: 10px 20px 0 20px;
-    font-weight: 500;
-    font-size: clamp(12px, 5vw, 20px);
-}
-button {
-    font-weight: 500;
-    font-size: clamp(12px, 5vw, 20px);
-    background-color: rgba(155, 65, 1, 0.395);
-    position: relative;
-    z-index: 1;
-    justify-content: center;
-    border: 2px solid rgb(166, 120, 88);
-}
-button:hover {
-    cursor: pointer;
 }
 </style>
