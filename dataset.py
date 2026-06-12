@@ -30,9 +30,10 @@ class ParameterRegistry:
 
     def parse_set_parameters(self, set_parameters: list[dict]) -> dict[str, torch.Tensor]:
         """
-        Skips any parameter id that isn't in the registry or is inactive.
-        A KeyError during forward means an id appeared in data but not parameters —
-        that's a data problem and should surface loudly.
+        Converts a setParameters array into {id: tensor} dict.
+        Silently skips inactive or unknown parameter ids.
+        Raises KeyError during forward if an id appears that was not registered —
+        meaning the parameter list and data are out of sync.
         """
         return {
             p['id']: self.parse_value(p['id'], p['value'])
@@ -108,6 +109,9 @@ class CombinedDataset(Dataset):
             [self._comp_weight] * len(self.comparison_ds) +
             [self._abs_weight]  * len(self.rank_ds)
         )
-        sampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
-        return DataLoader(self, batch_size=batch_size, sampler=sampler,
-                          collate_fn=list)
+        sampler = WeightedRandomSampler(
+            weights, num_samples=len(weights), replacement=True
+        )
+        return DataLoader(
+            self, batch_size=batch_size, sampler=sampler, collate_fn=list
+        )

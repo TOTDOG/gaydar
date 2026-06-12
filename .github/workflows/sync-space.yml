@@ -1,0 +1,17 @@
+name: Sync to HF Space
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Push to Hugging Face Space
+        run: |
+          git remote add space https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }}
+          git push space main --force

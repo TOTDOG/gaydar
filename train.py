@@ -1,25 +1,18 @@
+import os
 import torch
-from torch.optim import AdamW
-from torch.optim.lr_scheduler import CosineAnnealingLR
-
-from model import ModularTransformer
-from dataset import CombinedDataset
-from losses import combined_loss
-
-
-import torch
+import psycopg2
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from dotenv import load_dotenv
+from pathlib import Path
+from huggingface_hub import HfApi
 
-from model import ModularTransformer
+load_dotenv('.env.local')
+
+from model import ModularTransformer, DEVICE
 from dataset import CombinedDataset
 from losses import combined_loss
 
-import psycopg2
-import os
-from dotenv import load_dotenv
-
-load_dotenv('.env.local')
 
 def fetch_data():
     conn = psycopg2.connect(os.environ['DATABASE_URL'])
@@ -50,6 +43,34 @@ def fetch_data():
     return parameters, comparisons, ranks
 
 
+def upload_weights():
+    api = HfApi()
+    repo_id = os.environ['HF_REPO_ID']
+    token = os.environ['HF_TOKEN']
+    base = Path('/kaggle/working') if os.path.exists('/kaggle/working') else Path('.')
+
+    # Upload main model
+    api.upload_file(
+        path_or_fileobj=str(base / 'model.pt'),
+        path_in_repo='model.pt',
+        repo_id=repo_id,
+        repo_type='model',
+        token=token
+    )
+
+    # Upload all encoder weights
+    encoder_dir = base / 'encoder_weights'
+    for path in encoder_dir.glob('*.pt'):
+        api.upload_file(
+            path_or_fileobj=str(path),
+            path_in_repo=f'encoder_weights/{path.name}',
+            repo_id=repo_id,
+            repo_type='model',
+            token=token
+        )
+
+    print(f"Uploaded weights to {repo_id}")
+
 
 def train(model: ModularTransformer,
           parameters: list[dict],
@@ -58,32 +79,21 @@ def train(model: ModularTransformer,
           epochs: int = 50,
           lr: float = 1e-3,
           batch_size: int = 16,
-          grad_clip: float = 1.0,
-          save_path: str = 'model.pt'):
-    """
-    To start fresh:
-        model = ModularTransformer()
-        train(model, parameters, comparisons, ranks)
+          grad_clip: float = 1.0):
 
-    To resume:
-        model = ModularTransformer()
-        optimizer = AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
-        scheduler = ReduceLROnPlateau(optimizer)
-        model.load(optimizer=optimizer, scheduler=scheduler)
-        model.registry.register_all(parameters)
-        train(model, parameters, comparisons, ranks)
-    """
+    print(f"Training on {DEVICE}")
     model.registry.register_all(parameters)
 
     dataset = CombinedDataset(parameters, comparison_records, rank_records)
     loader = dataset.make_loader(batch_size)
 
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5,
-                                  patience=5, min_lr=1e-6)
+    scheduler = ReduceLROnPlateau(
+        optimizer, mode='min', factor=0.5, patience=5, min_lr=1e-6
+    )
 
-    # Load optimizer and scheduler states if resuming
-    model.load(save_path, optimizer=optimizer, scheduler=scheduler)
+    # Load existing weights and optimizer state if resuming
+    model.load(optimizer=optimizer, scheduler=scheduler)
 
     for epoch in range(epochs):
         model.train()
@@ -106,10 +116,10 @@ def train(model: ModularTransformer,
             current_lr = optimizer.param_groups[0]['lr']
             print(f"Epoch {epoch+1}/{epochs} — loss: {avg_loss:.4f}  lr: {current_lr:.2e}")
 
-    model.save(save_path, optimizer=optimizer, scheduler=scheduler)
+    model.save(optimizer=optimizer, scheduler=scheduler)
+    upload_weights()
 
 
-# --- Example usage ---
 if __name__ == '__main__':
     parameters, comparisons, ranks = fetch_data()
     model = ModularTransformer()

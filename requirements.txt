@@ -1,0 +1,7 @@
+torch
+sentence-transformers
+fastapi
+uvicorn[standard]
+psycopg2-binary
+python-dotenv
+huggingface_hub

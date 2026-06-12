@@ -1,6 +1,9 @@
+import os
 import torch
 import torch.nn as nn
-from encoders import EncoderRegistry, EMBED_DIM
+from encoders import EncoderRegistry, EMBED_DIM, get_model_path
+
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class ModularTransformer(nn.Module):
@@ -26,21 +29,22 @@ class ModularTransformer(nn.Module):
             nn.Dropout(dropout),
             nn.Linear(128, 1)
         )
+        self.to(DEVICE)
 
     def forward(self, scenario: dict[str, torch.Tensor]) -> torch.Tensor:
         """
         scenario: {attr_id: tensor(1, input_dim)} for each active parameter.
-        Raises KeyError if an id appears that wasn't registered — means the
-        parameter list and data are out of sync.
+        Raises KeyError if an id appears that was not registered.
         """
         embeddings = torch.stack(
-            [self.registry.encoders[aid](scenario[aid]) for aid in scenario],
+            [self.registry.encoders[aid](scenario[aid].to(DEVICE)) for aid in scenario],
             dim=1
         )  # (batch, num_active, EMBED_DIM)
         x = self.transformer(embeddings)
         return self.head(x.mean(dim=1)).squeeze(-1)  # (batch,)
 
-    def save(self, path: str = 'model.pt', optimizer=None, scheduler=None):
+    def save(self, optimizer=None, scheduler=None):
+        path = get_model_path()
         checkpoint = {
             'transformer': self.transformer.state_dict(),
             'head': self.head.state_dict(),
@@ -53,16 +57,17 @@ class ModularTransformer(nn.Module):
         self.registry.save()
         print(f"Saved model to {path}")
 
-    def load(self, path: str = 'model.pt', optimizer=None, scheduler=None):
-        import os
-        if not os.path.exists(path):
-            return  # fresh start, nothing to load
+    def load(self, optimizer=None, scheduler=None):
+        path = get_model_path()
+        if not path.exists():
+            print("No saved model found, starting fresh")
+            return
         self.registry.load_all()
-        checkpoint = torch.load(path, weights_only=True)
+        checkpoint = torch.load(path, weights_only=True, map_location=DEVICE)
         self.transformer.load_state_dict(checkpoint['transformer'])
         self.head.load_state_dict(checkpoint['head'])
-        if optimizer and 'optimizer' in checkpoint:
+        if optimizer is not None and 'optimizer' in checkpoint:
             optimizer.load_state_dict(checkpoint['optimizer'])
-        if scheduler and 'scheduler' in checkpoint:
+        if scheduler is not None and 'scheduler' in checkpoint:
             scheduler.load_state_dict(checkpoint['scheduler'])
         print(f"Loaded model from {path}")

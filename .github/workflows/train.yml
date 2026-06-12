@@ -1,0 +1,56 @@
+name: Train Model
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # every Sunday at midnight UTC
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Kaggle CLI
+        run: pip install kaggle
+
+      - name: Set up Kaggle credentials
+        run: |
+          mkdir -p ~/.kaggle
+          echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Write env file for Kaggle kernel
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env.local
+          echo "HF_TOKEN=${{ secrets.HF_TOKEN }}" >> .env.local
+          echo "HF_REPO_ID=${{ secrets.HF_REPO_ID }}" >> .env.local
+
+      - name: Push kernel to Kaggle and run
+        run: kaggle kernels push -p .
+
+      - name: Wait for kernel to finish
+        run: |
+          while true; do
+            STATUS=$(kaggle kernels status ${{ secrets.KAGGLE_USERNAME }}/${{ secrets.KAGGLE_KERNEL_NAME }} --csv | tail -1)
+            echo "Status: $STATUS"
+            if echo "$STATUS" | grep -q 'complete'; then
+              echo "Kernel finished successfully"
+              break
+            fi
+            if echo "$STATUS" | grep -q 'error'; then
+              echo "Kernel failed"
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Push updated code to Hugging Face Space
+        run: |
+          git remote add space https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }}
+          git push space main --force
